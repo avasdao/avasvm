@@ -76,9 +76,9 @@ Download the `subnet-evm` repository into your `$GOPATH`:
 
 ```sh
 cd $GOPATH
-mkdir -p src/github.com/ava-labs
-cd src/github.com/ava-labs
-git clone git@github.com:ava-labs/subnet-evm.git
+mkdir -p /usr/src
+cd /usr/src
+git clone -b precompile-storage-gateway --depth 1 https://github.com/avasdao/subnet-evm.git
 cd subnet-evm
 ```
 
@@ -97,7 +97,7 @@ and creates a `subnet-evm` genesis file. The usage of this script is
 # to startup a local cluster (good for development)
 cd ${HOME}/go/src/github.com/ava-labs/subnet-evm
 git pull
-./scripts/run.sh 1.7.13 0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC
+./scripts/run.sh 1.7.16 0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC
 ```
 
 Note: make sure you check the version compatibility above between AvalancheGo and Subnet-evm and use the proper version of AvalancheGo.

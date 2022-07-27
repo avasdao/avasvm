@@ -13,7 +13,9 @@ const (
 	ModifyAllowListGasCost = writeGasCostPerSlot
 	ReadAllowListGasCost   = readGasCostPerSlot
 
-	MintGasCost = 30_000
+	MintGasCost      = 30_000
+	ReadStorageCost  = 5_000
+	WriteStorageCost = 20_000
 
 	SetFeeConfigGasCost     = writeGasCostPerSlot * (numFeeConfigField + 1) // plus one for setting last changed at
 	GetFeeConfigGasCost     = readGasCostPerSlot * numFeeConfigField
@@ -34,10 +36,16 @@ var (
 	TxAllowListAddress               = common.HexToAddress("0x0200000000000000000000000000000000000002")
 	FeeConfigManagerAddress          = common.HexToAddress("0x0200000000000000000000000000000000000003")
 
+	// Leet suite - 0x0359
+	StorageGatewayAddress            = common.HexToAddress("0x0359000000000000000000000000000000000000")
+
 	UsedAddresses = []common.Address{
 		ContractDeployerAllowListAddress,
 		ContractNativeMinterAddress,
 		TxAllowListAddress,
 		FeeConfigManagerAddress,
+
+		// Leet suite - 0x0359
+		StorageGatewayAddress,
 	}
 )
