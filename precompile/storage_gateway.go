@@ -11,8 +11,12 @@
 package precompile
 
 import (
+	"encoding/hex"
 	"fmt"
+	"io/ioutil"
 	"math/big"
+	"net/http"
+	"regexp"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/log"
@@ -22,12 +26,16 @@ var (
 	_                           StatefulPrecompileConfig = &StorageGatewayConfig{}
 	StorageGatewayPrecompile StatefulPrecompiledContract = createStorageGatewayPrecompile()
 
-	getDataSignature      = CalculateFunctionSelector("getData(string)")
-	getDataByKeySignature = CalculateFunctionSelector("getDataByKey(string,string)")
-	setRecipientSignature = CalculateFunctionSelector("setRecipient(string,string)")
+	getDataSignature         = CalculateFunctionSelector("getData(string)")
+	getDataWithPathSignature = CalculateFunctionSelector("getData(string,string)")
+	getDataByKeySignature    = CalculateFunctionSelector("getDataByKey(string,string)")
+	setRecipientSignature    = CalculateFunctionSelector("setRecipient(string,string)")
 
 	nameKey      = common.BytesToHash([]byte("recipient"))
 	initialValue = common.BytesToHash([]byte("world"))
+
+	/* Set web gateway. */
+	WebGateway = ".ipfs.dweb.link"
 )
 
 type StorageGatewayConfig struct {
@@ -127,6 +135,25 @@ func SetRecipient(state StateDB, recipient string) {
 	state.SetState(StorageGatewayAddress, nameKey, common.BytesToHash([]byte(recipient)))
 }
 
+func getUrl(url string) (string, error) {
+    resp, err := http.Get(url)
+    if err != nil {
+        return "", fmt.Errorf("GET error: %v", err)
+    }
+    defer resp.Body.Close()
+
+    if resp.StatusCode != http.StatusOK {
+        return "", fmt.Errorf("Status error: %v", resp.StatusCode)
+    }
+
+    data, err := ioutil.ReadAll(resp.Body)
+    if err != nil {
+        return "", fmt.Errorf("Read body: %v", err)
+    }
+
+    return string(data), nil
+}
+
 /**
  * Get Data
  */
@@ -142,16 +169,101 @@ func getData(
 	remainingGas uint64,
 	err error,
 ) {
-	log.Info("\nINFO [getData]->", input, nil)
+	log.Info("\n[getData] input->", string(input), nil)
 
 	/* Calculate remaining gas. */
 	if remainingGas, err = deductGas(suppliedGas, ReadStorageCost); err != nil {
 		return nil, 0, err
 	}
 
-	testVal := "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+	/* Create a regex to filter only want letters and numbers. */
+    reg, err := regexp.Compile("[^a-zA-Z0-9]+")
 
-	response := []byte(string(testVal))
+	/* Handle errors. */
+    if err != nil {
+		return nil, remainingGas, err
+    }
+
+    cid := reg.ReplaceAllString(string(input), "")
+	log.Info("\n[getData] cid->", cid, nil)
+
+	/* Set (data) path. */
+	path := "/readme"
+
+	/* Set data target. */
+	target := "https://" + cid + WebGateway + path
+	log.Info("\n[getData] target->", string(target), nil)
+
+	/* Request URL data. */
+	data, err := getUrl(target)
+
+	/* Handle error. */
+    if err != nil {
+		return nil, remainingGas, err
+    }
+
+	/* Handle response. */
+	response := []byte(string(data))
+
+	/* Return response. */
+	return response, remainingGas, nil
+}
+
+/**
+ * Get Data With Path
+ */
+func getDataWithPath(
+	evm PrecompileAccessibleState,
+	callerAddr common.Address,
+	addr common.Address,
+	input []byte,
+	suppliedGas uint64,
+	readOnly bool,
+) (
+	ret []byte,
+	remainingGas uint64,
+	err error,
+) {
+	log.Info("\n[getDataWithPath] input->", string(input), nil)
+
+	/* Calculate remaining gas. */
+	if remainingGas, err = deductGas(suppliedGas, ReadStorageCost); err != nil {
+		return nil, 0, err
+	}
+
+	/* Create a regex to filter only want letters and numbers. */
+    reg, err := regexp.Compile("[^a-zA-Z0-9]+")
+
+	/* Handle error. */
+    if err != nil {
+		return nil, remainingGas, err
+    }
+
+    cid := reg.ReplaceAllString(string(input), "")
+	log.Info("\n[getDataWithPath] cid->", cid, nil)
+
+	lenInput, _ := fmt.Printf("%i", len(input))
+	log.Info("\n[getDataWithPath] lenInput->", string(lenInput), nil)
+	encodedString := hex.EncodeToString(input)
+	log.Info("\n[getDataWithPath] encodedString->\n", string(encodedString), nil)
+
+	/* Set (data) path. */
+	path := "/readme"
+
+	/* Set data target. */
+	target := "https://" + cid + WebGateway + path
+	log.Info("\n[getDataWithPath] target->", string(target), nil)
+
+	/* Request URL data. */
+	data, err := getUrl(target)
+
+	/* Handle error. */
+    if err != nil {
+		return nil, remainingGas, err
+    }
+
+	/* Handle response. */
+	response := []byte(string(data))
 
 	/* Return response. */
 	return response, remainingGas, nil
@@ -172,46 +284,30 @@ func getDataByKey(
 	remainingGas uint64,
 	err error,
 ) {
-	log.Info("\nINFO [getDataByKey]->", input, nil)
+	log.Info("\n[getDataByKey] input->", string(input), nil)
 
 	/* Calculate remaining gas. */
 	if remainingGas, err = deductGas(suppliedGas, ReadStorageCost); err != nil {
 		return nil, 0, err
 	}
 
-	testVal := "48d3c6d9-7324-4ae5-b7fd-32e19fa3996e"
-	// testVal := `{
-    //   "chainId": 99999,
-    //   "homesteadBlock": 0,
-    //   "eip150Block": 0,
-    //   "eip150Hash": "0x2086799aeebeae135c246c65021c82b4e15a2c451340993aacfd2751886514f0",
-    //   "eip155Block": 0,
-    //   "eip158Block": 0,
-    //   "byzantiumBlock": 0,
-    //   "constantinopleBlock": 0,
-    //   "petersburgBlock": 0,
-    //   "istanbulBlock": 0,
-    //   "muirGlacierBlock": 0,
-    //   "subnetEVMTimestamp": 0,
-    //   "feeConfig": {
-    //     "gasLimit": 20000000,
-    //     "minBaseFee": 1000000000,
-    //     "targetGas": 100000000,
-    //     "baseFeeChangeDenominator": 48,
-    //     "minBlockGasCost": 0,
-    //     "maxBlockGasCost": 10000000,
-    //     "targetBlockRate": 2,
-    //     "blockGasCostStep": 500000
-    //   },
-    //   "storageGatewayConfig": {
-    //       "blockTimestamp": 0
-    //   }
-    // }`
+	/* Set CID. */
+	cid := "bafybeie5nqv6kd3qnfjupgvz34woh3oksc3iau6abmyajn7qvtf6d2ho34"
 
-	response := []byte(string(testVal))
+	/* Set (data) path. */
+	path := "/readme"
+
+	/* Set data target. */
+	target := "https://" + cid + WebGateway + path
+
+	/* Request URL data. */
+	data, err := getUrl(target)
+
+	/* Handle response. */
+	response := []byte(string(data))
 
 	/* Return response. */
-	return response, remainingGas, nil
+	return response, remainingGas, err
 }
 
 /**
@@ -232,7 +328,7 @@ func setRecipient(
 	remainingGas uint64,
 	err error,
 ) {
-	log.Info("\nINFO [setRecipient]->", input, nil)
+	log.Info("\n[setRecipient] input->", input, nil)
 
 	recipient, err := UnpackStorageGatewayInput(input)
 
@@ -266,6 +362,12 @@ func createStorageGatewayPrecompile() StatefulPrecompiledContract {
 		newStatefulPrecompileFunction(
 			getDataSignature,
 			getData,
+		),
+
+		/* Get data w/ path. */
+		newStatefulPrecompileFunction(
+			getDataWithPathSignature,
+			getDataWithPath,
 		),
 
 		/* Get data by key. */
