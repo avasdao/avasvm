@@ -6,8 +6,9 @@
 pragma solidity >=0.8.0;
 
 interface StorageGatewayInterface {
-    function sayHello() external;
+    /* Say hello. */
+    function sayHello() external returns (bytes memory result);
 
-    // setRecipient
-    function setReceipient(string calldata recipient) external;
+    /* Set recipient. */
+    function setRecipient(string calldata recipient) external returns (bytes memory result);
 }
