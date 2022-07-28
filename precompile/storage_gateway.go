@@ -23,8 +23,7 @@ var (
 	StorageGatewayPrecompile StatefulPrecompiledContract = createStorageGatewayPrecompile()
 
 	getDataSignature      = CalculateFunctionSelector("getData(string)")
-	getDataByKeySignature      = CalculateFunctionSelector("getDataByKey(string,string)")
-
+	getDataByKeySignature = CalculateFunctionSelector("getDataByKey(string,string)")
 	setRecipientSignature = CalculateFunctionSelector("setRecipient(string,string)")
 
 	nameKey      = common.BytesToHash([]byte("recipient"))
@@ -55,6 +54,8 @@ func (h *StorageGatewayConfig) Contract() StatefulPrecompiledContract {
 }
 
 /**
+ * Pack Storage Gateway Input
+ *
  * Arguments are passed in to functions according to the ABI specification: https://docs.soliditylang.org/en/latest/abi-spec.html.
  * Therefore, we maintain compatibility with Solidity by following the same specification while encoding/decoding arguments.
  */
@@ -79,7 +80,9 @@ func PackStorageGatewayInput(name string) ([]byte, error) {
 }
 
 /**
- * UnpackStorageGatewayInput unpacks the recipient string from the Storage Gateway input.
+ * Unpack Storage Gateway Input
+ *
+ * Unpacks the recipient string from the Storage Gateway input.
  */
 func UnpackStorageGatewayInput(input []byte) (string, error) {
 	log.Info("Entering UnpackStorageGatewayInput ->", string(input), nil)
@@ -124,6 +127,9 @@ func SetRecipient(state StateDB, recipient string) {
 	state.SetState(StorageGatewayAddress, nameKey, common.BytesToHash([]byte(recipient)))
 }
 
+/**
+ * Get Data
+ */
 func getData(
 	evm PrecompileAccessibleState,
 	callerAddr common.Address,
@@ -136,9 +142,9 @@ func getData(
 	remainingGas uint64,
 	err error,
 ) {
-	log.Info("\ninput->")
-	log.Info(string(input))
+	log.Info("\nINFO [getData]->", input, nil)
 
+	/* Calculate remaining gas. */
 	if remainingGas, err = deductGas(suppliedGas, ReadStorageCost); err != nil {
 		return nil, 0, err
 	}
@@ -147,10 +153,13 @@ func getData(
 
 	response := []byte(string(testVal))
 
+	/* Return response. */
 	return response, remainingGas, nil
-	// return []byte(fmt.Sprintf(testVal)), remainingGas, nil
 }
 
+/**
+ * Get Data By Key
+ */
 func getDataByKey(
 	evm PrecompileAccessibleState,
 	callerAddr common.Address,
@@ -163,9 +172,9 @@ func getDataByKey(
 	remainingGas uint64,
 	err error,
 ) {
-	log.Info("\ninput->")
-	log.Info(string(input))
+	log.Info("\nINFO [getDataByKey]->", input, nil)
 
+	/* Calculate remaining gas. */
 	if remainingGas, err = deductGas(suppliedGas, ReadStorageCost); err != nil {
 		return nil, 0, err
 	}
@@ -201,12 +210,14 @@ func getDataByKey(
 
 	response := []byte(string(testVal))
 
+	/* Return response. */
 	return response, remainingGas, nil
-	// return []byte(fmt.Sprintf(testVal)), remainingGas, nil
 }
 
 /**
- * `setRecipient` is the execution function of "setRecipient(name string)"
+ * Set Recipient
+ *
+ * Is the execution function of "setRecipient(name string)"
  * and sets the recipient in the string returned by Storage Gateway.
 */
 func setRecipient(
@@ -221,7 +232,8 @@ func setRecipient(
 	remainingGas uint64,
 	err error,
 ) {
-	log.Info("Entering setRecipient()")
+	log.Info("\nINFO [setRecipient]->", input, nil)
+
 	recipient, err := UnpackStorageGatewayInput(input)
 
 	if err != nil {
@@ -250,19 +262,30 @@ func setRecipient(
 func createStorageGatewayPrecompile() StatefulPrecompiledContract {
 	/* Construct the contract without a fallback function. */
 	storageGatewayFuncs := []*statefulPrecompileFunction {
+		/* Get data. */
 		newStatefulPrecompileFunction(
-			getDataSignature, getData),
+			getDataSignature,
+			getData,
+		),
 
+		/* Get data by key. */
 		newStatefulPrecompileFunction(
-			getDataByKeySignature, getDataByKey),
+			getDataByKeySignature,
+			getDataByKey,
+		),
 
+		// TODO
 		newStatefulPrecompileFunction(
-			setRecipientSignature, setRecipient),
+			setRecipientSignature,
+			setRecipient,
+		),
 	}
 
 	/* Construct the contract without a fallback function. */
 	contract := newStatefulPrecompileWithFunctionSelectors(
-		nil, storageGatewayFuncs)
+		nil,
+		storageGatewayFuncs,
+	)
 
 	/* Return contract. */
 	return contract
