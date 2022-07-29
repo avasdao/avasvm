@@ -121,7 +121,7 @@ type ChainConfig struct {
 	TxAllowListConfig               precompile.TxAllowListConfig               `json:"txAllowListConfig,omitempty"`               // Config for the tx allow list precompile
 	FeeManagerConfig                precompile.FeeConfigManagerConfig          `json:"feeManagerConfig,omitempty"`                // Config for the fee manager precompile
 
-	// Leet suite - 0x0359
+	// Leet suite - 0x0539
 	StorageGatewayConfig            precompile.StorageGatewayConfig            `json:"storageGatewayConfig,omitempty"` 		          // Config for the contract storage gateway
 }
 

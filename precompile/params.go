@@ -36,8 +36,8 @@ var (
 	TxAllowListAddress               = common.HexToAddress("0x0200000000000000000000000000000000000002")
 	FeeConfigManagerAddress          = common.HexToAddress("0x0200000000000000000000000000000000000003")
 
-	// Leet suite - 0x0359
-	StorageGatewayAddress            = common.HexToAddress("0x0359000000000000000000000000000000000000")
+	// Leet suite - 0x0539
+	StorageGatewayAddress            = common.HexToAddress("0x0539000000000000000000000000000000000000")
 
 	UsedAddresses = []common.Address{
 		ContractDeployerAllowListAddress,
@@ -45,7 +45,7 @@ var (
 		TxAllowListAddress,
 		FeeConfigManagerAddress,
 
-		// Leet suite - 0x0359
+		// Leet suite - 0x0539
 		StorageGatewayAddress,
 	}
 )

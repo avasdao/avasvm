@@ -275,7 +275,7 @@ func getDataWithPath(
 	/* Set (data) path. */
 	// NOTE: Add forward slash prefix.
 	path := "/" + string(param2)
-	log.Info("\n[getDataWithPath] cid->", cid, nil)
+	log.Info("\n[getDataWithPath] path->", path, nil)
 
 	/* Set data target. */
 	target := "https://" + cid + WebGateway + path

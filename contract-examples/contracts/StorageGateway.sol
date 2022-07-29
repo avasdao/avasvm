@@ -1,28 +1,33 @@
 /*******************************************************************************
-* Copyright (c) 2022 Ava's DAO
-* All rights reserved.
-*
-* SPDX-License-Identifier: MIT
-*
-* https://avasdao.org
-* support@avasdao.org
-*/
+ * Copyright (c) 2022 Ava's DAO
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: MIT
+ *
+ * https://avasdao.org
+ * support@avasdao.org
+ */
 
 pragma solidity >=0.8.0;
 
 import "./IStorageGateway.sol";
 
-/**
- * Storage Gateway
- *
- * A precompiled contract address at:
- * 0x0000 (0)
- *
- * This precompile is a part of the Leet Suite of Subnet contracts.
- */
-address constant STORAGE_GATEWAY_ADDRESS = 0x0359000000000000000000000000000000000000;
+// *****************************************************************************
+// Storage Gateway Address
+//
+// This is a unique, precompiled contract address stored on each node
+// of any Validator supporting this service.
+//
+// This precompile is a part of the Leet Suite of Subnet contracts.
+// Registered address is:
+//   - 0x0539000000000000000000000000000000000000
+//   - 0x00 (0)
+//
+address constant STORAGE_GATEWAY_ADDRESS
+    = 0x0539000000000000000000000000000000000000;
 
 contract StorageGateway {
+    // FOR DEBUGGING PURPOSES ONLY
     event LogBool(bool myBool);
     event LogBytes(bytes myBytes);
     event LogString(string myString);
@@ -38,19 +43,48 @@ contract StorageGateway {
     function getData(
         string calldata _cid
     ) external view returns (
-        bool,
-        string memory
+        bool success,
+        string memory response
     ) {
-        // result = storageGateway.getData(_cid);
-
-        (bool success, bytes memory data) = address(storageGateway).staticcall(
-            abi.encodeWithSignature("getData(string)", _cid)
-        );
+        (bool _success, bytes memory data) = address(storageGateway)
+            .staticcall(
+                abi.encodeWithSignature(
+                    "getData(string)",
+                    _cid
+                )
+            );
 
         /* Convert response data to string. */
-        string memory response = string(data);
+        string memory _response = string(data);
 
-        return (success, response);
+        /* Return. */
+        return (_success, _response);
+    }
+
+    /**
+     * Get Data (With Path)
+     */
+    function getData(
+        string calldata _cid,
+        string calldata _path
+    ) external view returns (
+        bool success,
+        string memory response
+    ) {
+        (bool _success, bytes memory data) = address(storageGateway)
+            .staticcall(
+                abi.encodeWithSignature(
+                    "getData(string,string)",
+                    _cid,
+                    _path
+                )
+            );
+
+        /* Convert response data to string. */
+        string memory _response = string(data);
+
+        /* Return. */
+        return (_success, _response);
     }
 
     /**
@@ -58,33 +92,55 @@ contract StorageGateway {
      */
     function getDataByKey(
         string calldata _cid,
-        string calldata _cid2
+        string calldata _key
     ) external view returns (
-        bool,
-        string memory
+        bool success,
+        string memory response
     ) {
-        // result = storageGateway.getData(_cid);
-
-        (bool success, bytes memory data) = address(storageGateway).staticcall(
-            abi.encodeWithSignature("getDataByKey(string,string)", _cid, _cid2)
-        );
+        (bool _success, bytes memory data) = address(storageGateway)
+            .staticcall(
+                abi.encodeWithSignature(
+                    "getDataByKey(string,string)",
+                    _cid,
+                    _key
+                )
+            );
 
         /* Convert response data to string. */
-        string memory response = string(data);
+        string memory _response = string(data);
 
-        return (success, response);
+        /* Return. */
+        return (_success, _response);
     }
 
-    // setRecipient
-    function setRecipient(
-        string calldata _firstName,
-        string calldata _lastName
+    /**
+     * Save Data
+     *
+     * Provide data to be saved to immutable storage.
+     *
+     * Recieve back a Content Identifier (CID) for the data.
+     */
+    function saveData(
+        string calldata _data
     ) external returns (
-        string memory result
+        bool success,
+        string memory cid
     ) {
-        result = storageGateway
-            .setRecipient(_firstName, _lastName);
+        (bool _success, bytes memory data) = address(storageGateway)
+            .call(
+                abi.encodeWithSignature(
+                    "saveData(string)",
+                    _data
+                )
+            );
 
-        emit LogString(result);
+        /* Convert response data to string. */
+        string memory _cid = string(data);
+
+        /* Emit (save) log entry. */
+        emit LogString(_cid);
+
+        /* Return. */
+        return (_success, _cid);
     }
 }
