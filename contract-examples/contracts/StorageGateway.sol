@@ -20,11 +20,11 @@ import "./IStorageGateway.sol";
 //
 // This precompile is a part of the Leet Suite of Subnet contracts.
 // Registered address is:
-//   - 0x0539000000000000000000000000000000000000
-//   - 0x00 (0)
+//   - 0x0539000000000000000000000000000000000001
+//   - 0x01 (1)
 //
 address constant STORAGE_GATEWAY_ADDRESS
-    = 0x0539000000000000000000000000000000000000;
+    = 0x0539000000000000000000000000000000000001;
 
 contract StorageGateway {
     // FOR DEBUGGING PURPOSES ONLY

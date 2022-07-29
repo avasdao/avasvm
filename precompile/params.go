@@ -37,7 +37,7 @@ var (
 	FeeConfigManagerAddress          = common.HexToAddress("0x0200000000000000000000000000000000000003")
 
 	// Leet suite - 0x0539
-	StorageGatewayAddress            = common.HexToAddress("0x0539000000000000000000000000000000000000")
+	StorageGatewayAddress            = common.HexToAddress("0x0539000000000000000000000000000000000001")
 
 	UsedAddresses = []common.Address{
 		ContractDeployerAllowListAddress,

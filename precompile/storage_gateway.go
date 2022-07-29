@@ -1,12 +1,12 @@
 /*******************************************************************************
-* Copyright (c) 2022 Ava's DAO
-* All rights reserved.
-*
-* SPDX-License-Identifier: MIT
-*
-* https://avasdao.org
-* support@avasdao.org
-*/
+ * Copyright (c) 2022 Ava's DAO
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: MIT
+ *
+ * https://avasdao.org
+ * support@avasdao.org
+ */
 
 package precompile
 
@@ -30,10 +30,10 @@ var (
 	getDataSignature         = CalculateFunctionSelector("getData(string)")
 	getDataWithPathSignature = CalculateFunctionSelector("getData(string,string)")
 	getDataByKeySignature    = CalculateFunctionSelector("getDataByKey(string,string)")
-	setRecipientSignature    = CalculateFunctionSelector("setRecipient(string,string)")
+	saveDataSignature        = CalculateFunctionSelector("setData(string,string)")
 
 	nameKey      = common.BytesToHash([]byte("recipient"))
-	initialValue = common.BytesToHash([]byte("world"))
+	initialValue = common.BytesToHash([]byte("Satoshi"))
 
 	/* Set web gateway. */
 	WebGateway = ".ipfs.dweb.link"
@@ -63,12 +63,12 @@ func (h *StorageGatewayConfig) Contract() StatefulPrecompiledContract {
 }
 
 /**
- * Pack Storage Gateway Input
+ * Pack Input
  *
  * Arguments are passed in to functions according to the ABI specification: https://docs.soliditylang.org/en/latest/abi-spec.html.
  * Therefore, we maintain compatibility with Solidity by following the same specification while encoding/decoding arguments.
  */
-func PackStorageGatewayInput(name string) ([]byte, error) {
+func PackInput(name string) ([]byte, error) {
 	byteStr := []byte(name)
 
 	if len(byteStr) > common.HashLength {
@@ -89,12 +89,12 @@ func PackStorageGatewayInput(name string) ([]byte, error) {
 }
 
 /**
- * Unpack Storage Gateway Input
+ * Unpack Input
  *
- * Unpacks the recipient string from the Storage Gateway input.
+ * Unpacks the received input from the contract's parameters.
  */
-func UnpackStorageGatewayInput(input []byte) (string, error) {
-	log.Info("Entering UnpackStorageGatewayInput ->", string(input), nil)
+func UnpackInput(input []byte) (string, error) {
+	log.Info("Entering UnpackInput ->", string(input), nil)
 
 	if len(input) < common.HashLength {
 		return "", fmt.Errorf("cannot unpack Storage Gateway input with length: %d", len(input))
@@ -338,12 +338,12 @@ func getDataByKey(
 }
 
 /**
- * Set Recipient
+ * Save Data
  *
- * Is the execution function of "setRecipient(name string)"
- * and sets the recipient in the string returned by Storage Gateway.
+ * This method will request a Node/Validator to pin the supplied
+ * data to the immutable storage device.
 */
-func setRecipient(
+func saveData(
 	accessibleState PrecompileAccessibleState,
 	caller common.Address,
 	addr common.Address,
@@ -355,23 +355,15 @@ func setRecipient(
 	remainingGas uint64,
 	err error,
 ) {
-	log.Info("\n[setRecipient] input->", input, nil)
+	log.Info("\n[saveData] input->", input, nil)
 
-	recipient, err := UnpackStorageGatewayInput(input)
-
-	if err != nil {
-		return nil, 0, err
-	}
+	// THIS METHOD IS UNIMPLEMENTED
 
 	remainingGas, err = deductGas(suppliedGas, WriteStorageCost)
 
 	if err != nil {
 		return nil, 0, err
 	}
-
-	log.Info("SetRecipient-1", recipient, nil)
-	log.Info("SetRecipient-2", fmt.Sprintf("recipient -> %s", recipient), nil)
-	SetRecipient(accessibleState.GetStateDB(), recipient)
 
 	return []byte{}, remainingGas, nil
 }
@@ -405,8 +397,8 @@ func createStorageGatewayPrecompile() StatefulPrecompiledContract {
 
 		// TODO
 		newStatefulPrecompileFunction(
-			setRecipientSignature,
-			setRecipient,
+			saveDataSignature,
+			saveData,
 		),
 	}
 
