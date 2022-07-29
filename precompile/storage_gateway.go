@@ -17,6 +17,7 @@ import (
 	"math/big"
 	"net/http"
 	"regexp"
+	"strconv"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/log"
@@ -171,6 +172,9 @@ func getData(
 ) {
 	log.Info("\n[getData] input->", string(input), nil)
 
+	encodedString := hex.EncodeToString(input)
+	log.Info("\n[getData] encodedString->\n", string(encodedString), nil)
+
 	/* Calculate remaining gas. */
 	if remainingGas, err = deductGas(suppliedGas, ReadStorageCost); err != nil {
 		return nil, 0, err
@@ -231,24 +235,47 @@ func getDataWithPath(
 		return nil, 0, err
 	}
 
-	/* Create a regex to filter only want letters and numbers. */
-    reg, err := regexp.Compile("[^a-zA-Z0-9]+")
-
 	/* Handle error. */
     if err != nil {
 		return nil, remainingGas, err
     }
 
-    cid := reg.ReplaceAllString(string(input), "")
-	log.Info("\n[getDataWithPath] cid->", cid, nil)
-
-	lenInput, _ := fmt.Printf("%i", len(input))
-	log.Info("\n[getDataWithPath] lenInput->", string(lenInput), nil)
 	encodedString := hex.EncodeToString(input)
 	log.Info("\n[getDataWithPath] encodedString->\n", string(encodedString), nil)
 
+	param1Pos := common.TrimLeftZeroes(input[:32])
+	param1PosHex := hex.EncodeToString(param1Pos)
+	param1PosDec, _ := strconv.ParseInt(param1PosHex, 16, 64)
+	log.Info("\n[getDataWithPath] param1PosHex->", string(param1PosHex), nil)
+
+	param2Pos := common.TrimLeftZeroes(input[32:64])
+	param2PosHex := hex.EncodeToString(param2Pos)
+	param2PosDec, _ := strconv.ParseInt(param2PosHex, 16, 64)
+	log.Info("\n[getDataWithPath] param2PosHex->", string(param2PosHex), nil)
+
+	param1Len := common.TrimLeftZeroes(input[param1PosDec:(param1PosDec + 32)])
+	param1LenHex := hex.EncodeToString(param1Len)
+	param1LenDec, _ := strconv.ParseInt(param1LenHex, 16, 64)
+	log.Info("\n[getDataWithPath] param1LenHex->", string(param1LenHex), nil)
+
+	param2Len := common.TrimLeftZeroes(input[param2PosDec:(param2PosDec + 32)])
+	param2LenHex := hex.EncodeToString(param2Len)
+	param2LenDec, _ := strconv.ParseInt(param2LenHex, 26, 64)
+	log.Info("\n[getDataWithPath] param2LenHex->", string(param2LenHex), nil)
+
+	param1 := common.TrimRightZeroes(input[(param1PosDec + 32):(param1PosDec + 32 + param1LenDec)])
+	log.Info("\n[getDataWithPath] param1->", string(param1), nil)
+
+	param2 := common.TrimRightZeroes(input[(param2PosDec + 32):(param2PosDec + 32 + param2LenDec)])
+	log.Info("\n[getDataWithPath] param2->", string(param2), nil)
+
+	cid := string(param1)
+	log.Info("\n[getDataWithPath] cid->", cid, nil)
+
 	/* Set (data) path. */
-	path := "/readme"
+	// NOTE: Add forward slash prefix.
+	path := "/" + string(param2)
+	log.Info("\n[getDataWithPath] cid->", cid, nil)
 
 	/* Set data target. */
 	target := "https://" + cid + WebGateway + path
