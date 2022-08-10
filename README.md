@@ -1,14 +1,14 @@
-# Nexa EVM
+# AvasVM
 
-[Nexa](https://www.nexa.org/) is a peer-to-peer value system.
+[Ava's DAO](https://avasdao.org) welcomes you to the hottest community in DeFi
 
-Nexa EVM is the [Virtual Machine (VM)](https://docs.avax.network/overview/getting-started/avalanche-platform/#virtual-machines) that powers the Nexa Experience.
+AvasVM is the [Virtual Machine (VM)](https://docs.avax.network/overview/getting-started/avalanche-platform/#virtual-machines) that powers Ava's entire network.
 
 This chain implements the Ethereum Virtual Machine and supports Solidity smart contracts as well as most other Ethereum client functionality.
 
 ## Building
 
-The Nexa EVM runs in a separate process from the main AvalancheGo process and communicates with it over a local gRPC connection.
+AvasVM runs in a separate process from the main AvalancheGo process and communicates with it over a local gRPC connection.
 
 ### Node Requirements
 
@@ -16,11 +16,12 @@ The Nexa EVM runs in a separate process from the main AvalancheGo process and co
 
 ## Compatibility
 
-The Nexa EVM is compatible with almost all Ethereum tooling, including [Remix](https://docs.avax.network/dapps/smart-contracts/deploy-a-smart-contract-on-avalanche-using-remix-and-metamask/), [Metamask](https://docs.avax.network/dapps/smart-contracts/deploy-a-smart-contract-on-avalanche-using-remix-and-metamask/) and [Truffle](https://docs.avax.network/dapps/smart-contracts/using-truffle-with-the-avalanche-c-chain/).
+The AvasVM is compatible with almost all Ethereum tooling, including [Remix](https://docs.avax.network/dapps/smart-contracts/deploy-a-smart-contract-on-avalanche-using-remix-and-metamask/), [Metamask](https://docs.avax.network/dapps/smart-contracts/deploy-a-smart-contract-on-avalanche-using-remix-and-metamask/) and [Truffle](https://docs.avax.network/dapps/smart-contracts/using-truffle-with-the-avalanche-c-chain/).
 
-## Differences Between Nexa EVM and Subnet EVM
+## Differences Between AvasVM and Subnet EVM
 
-- Added custom precompiles...
+- Added NEW custom, stateful precompiles
+- Introduced a application-specific, dynamic fee schedule
 
 ## Create an EVM Subnet on a Local Network
 
@@ -32,23 +33,23 @@ Set `$GOPATH` environment variable properly for Go to look for Go Workspaces. Pl
 
 As a few software will be installed into `$GOPATH/bin`, please make sure that `$GOPATH/bin` is in your `$PATH`, otherwise, you may get error running the commands below.
 
-### Clone Nexa-EVM
+### Clone AvasVM
 
-Download the `nexa-evm` repository into your `$GOPATH`:
+Download the `avasvm` repository into your `$GOPATH`:
 
 ```sh
 cd $GOPATH
 mkdir -p src/github.com/ava-labs
 cd src/github.com/ava-labs
-git clone git@github.com:modenero/nexa-evm.git
-cd subnet-evm
+git clone https://github.com/avasdao/avasvm.git
+cd avasvm
 ```
 
 This will clone and checkout to `master` branch.
 
 ### Run Local Network
 
-[`scripts/run.sh`](https://github.com/modenero/nexa-evm/blob/master/scripts/run.sh) automatically installs `avalanchego`, sets up a local network,
+[`scripts/run.sh`](https://github.com/avasdao/avasvm/blob/master/scripts/run.sh) automatically installs `avalanchego`, sets up a local network,
 and creates a `subnet-evm` genesis file. The usage of this script is
 
 ```bash
@@ -57,7 +58,7 @@ and creates a `subnet-evm` genesis file. The usage of this script is
 
 ```bash
 # to startup a local cluster (good for development)
-cd ${HOME}/go/src/github.com/modenero/nexa-evm
+cd ${HOME}/go/src/github.com/avasdao/avasvm
 git pull
 ./scripts/run.sh 1.7.13 0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC
 ```
